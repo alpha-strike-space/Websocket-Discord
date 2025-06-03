@@ -65,7 +65,7 @@ build_pretty_msg <- function(msg) {
       time_str <- if (!is.null(obj$time_stamp)) ldap_to_utc(obj$time_stamp) else "Unknown time"
       # Human readable beauty contest from the data frame. The object 'obj' names match the json formatting.
       return(sprintf(
-        "🚨 **%s** lost a **%s** in **%s** to **%s**!\nTime: `%s`",
+        "```🚨 [Incident] %s lost a %s in %s to %s!\nTime: %s ```",
         obj$victim_name, obj$loss_type, obj$solar_system_name, obj$killer_name, time_str
       ))
       # Otherwise, create our readable message.
@@ -75,7 +75,7 @@ build_pretty_msg <- function(msg) {
         sapply(obj, function(x) {
           time_str <- if (!is.null(x$time_stamp)) ldap_to_utc(x$time_stamp) else "Unknown time"
           sprintf(
-            "🚨 **%s** lost a **%s** in **%s** to **%s**!\nTime: `%s`",
+            "```🚨 [Incident] %s lost a %s in %s to %s!\nTime: %s ```",
             x$victim_name, x$loss_type, x$solar_system_name, x$killer_name, time_str
           )
         }),
