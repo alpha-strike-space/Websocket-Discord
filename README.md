@@ -2,7 +2,7 @@
 This is a sample of a webpage launchable with [Rocker](https://rocker-project.org/images/versioned/shiny.html). [Rocker](https://rocker-project.org/images/versioned/shiny.html) makes it easy to deploy executables on a server host using [R language](https://cran.rstudio.org/) dependencies to create beautiful applications using the language. In particular, this application makes use of [R Shiny](https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/).
 
 You may read about the summarized documentation of Docker here:
-https://github.com/kandrsn99/Web-Hosting-Rocker-Nginx-Proxy/blob/main/Docker%20Command%20Line%20Interface.pdf
+https://github.com/alpha-strike-space/Websocket-Discord/blob/main/Docker%20Command%20Line%20Interface.pdf
 
 It shall be noted here you will need to install the Docker Engine on your local machine. You may do this through the instructions on the following webpage: https://docs.docker.com/engine/install/
 
