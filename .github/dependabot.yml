@@ -5,19 +5,7 @@
 
 version: 2
 updates:
-  # Monitor R package dependencies (renv.lock)
-  - package-ecosystem: "github-actions"
-    directory: "/" # Location of GitHub Actions workflows
-    schedule:
-      interval: "weekly"
-
   - package-ecosystem: "docker"
-    directory: "/" # Location of your Dockerfile
+    directory: "/"           # Location of your Dockerfile
     schedule:
-      interval: "weekly"
-
-  # If you use renv for R dependencies, add this section
-  - package-ecosystem: "renv"
-    directory: "/" # Adjust if your renv.lock is in a subdirectory
-    schedule:
-      interval: "weekly"
+      interval: "weekly"     # Check for updates weekly
