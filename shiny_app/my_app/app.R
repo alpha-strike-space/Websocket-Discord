@@ -56,12 +56,10 @@ ui <- navbarPage(
   )
 )
 
-# Convert the CCP LDAP time to UTC time for end-users.
-ldap_to_utc <- function(ldap_timestamp) {
-  if (is.null(ldap_timestamp) || is.na(ldap_timestamp)) return(NA)
-  origin <- as.POSIXct("1601-01-01 00:00:00", tz = "UTC")
-  seconds <- as.numeric(ldap_timestamp) / 1e7
-  utc_time <- origin + seconds
+# Convert Unix timestamp (seconds since 1970-01-01) to UTC time for end-users.
+unix_to_utc <- function(unix_timestamp) {
+  if (is.null(unix_timestamp) || is.na(unix_timestamp)) return(NA)
+  utc_time <- as.POSIXct(as.numeric(unix_timestamp), origin = "1970-01-01", tz = "UTC")
   format(utc_time, "%Y-%m-%d %H:%M:%S UTC")
 }
 
@@ -69,32 +67,43 @@ ldap_to_utc <- function(ldap_timestamp) {
 build_pretty_msg <- function(msg) {
   tryCatch({
     obj <- jsonlite::fromJSON(msg, simplifyDataFrame = TRUE)
+
+    # If the message has a 'message' field, just return it.
     if (!is.null(obj$message)) {
       return(obj$message)
-    } else if (is.list(obj) && !is.null(obj$victim_name)) {
-      time_str <- if (!is.null(obj$time_stamp)) ldap_to_utc(obj$time_stamp) else "Unknown time"
-      return(sprintf(
-        "```🚨 [Incident] %s lost a %s in %s to %s!\nTime: %s ```",
-        obj$victim_name, obj$loss_type, obj$solar_system_name, obj$killer_name, time_str
-      ))
-    } else if (is.list(obj) && length(obj) > 0 && !is.null(obj[[1]]$victim_name)) {
+    }
+
+    # Helper for single loss event
+    format_loss <- function(x) {
+      time_str <- if (!is.null(x$time_stamp)) unix_to_utc(x$time_stamp) else "Unknown time"
+      mail_link <- if (!is.null(x$id)) sprintf("<https://frontier.alpha-strike.space/pages/killmail.html?mail_id=%s>", x$id) else ""
+      sprintf(
+        "```🚨 [Incident] %s lost a %s in %s to %s!\nTime: %s ```\n%s",
+        x$victim_name, x$loss_type, x$solar_system_name, x$killer_name, time_str, mail_link
+      )
+    }
+
+    # If it's a single object with the expected fields
+    if (is.list(obj) && !is.null(obj$victim_name)) {
+      return(format_loss(obj))
+    }
+
+    # If it's a list of such objects
+    if (is.list(obj) && length(obj) > 0 && !is.null(obj[[1]]$victim_name)) {
       return(paste(
-        sapply(obj, function(x) {
-          time_str <- if (!is.null(x$time_stamp)) ldap_to_utc(x$time_stamp) else "Unknown time"
-          sprintf(
-            "```🚨 [Incident] %s lost a %s in %s to %s!\nTime: %s ```",
-            x$victim_name, x$loss_type, x$solar_system_name, x$killer_name, time_str
-          )
-        }),
+        sapply(obj, format_loss),
         collapse = "\n\n"
       ))
-    } else {
-      return(substr(msg, 1, 1900))
     }
+
+    # Fallback: show first 1900 chars if unknown structure
+    substr(msg, 1, 1900)
+
   }, error = function(e) substr(msg, 1, 1900))
 }
 
 server <- function(input, output, session) {
+  #print(is.function(build_pretty_msg))
   status_msg <- reactiveVal("No webhooks set.")
 
   # For dynamic UI
